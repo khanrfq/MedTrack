@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Medicine</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f7ff;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      background: #ffffff;
+      padding: 30px 40px;
+      width: 420px;
+      margin: auto;
+      border-radius: 20px;
+      box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+      border: 1px solid #ccc; /* 👈 Thin border added */
+    }
+    h2 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 30px;
+    }
+    label {
+      font-weight: 500;
+      margin-top: 10px;
+      display: block;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    input[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add New Medicine</h2>
+    <form method="POST" action="/add-medicine">
+      <label>Medicine Name:</label>
+      <input type="text" name="medicine_name" required>
+
+      <label>Dose Count:</label>
+      <input type="number" name="dose_count" required>
+
+      <label>Dose Time:</label>
+      <input type="time" name="dose_time" required>
+
+      <label>Start Date:</label>
+      <input type="date" name="start_date" required>
+
+      <label>End Date:</label>
+      <input type="date" name="end_date" required>
+
+      <label>Frequency:</label>
+      <select name="frequency" required>
+        <option value="Once daily">Once daily</option>
+        <option value="Twice daily">Twice daily</option>
+        <option value="Every 8 hours">Every 8 hours</option>
+      </select>
+
+      <input type="submit" value="Add Medicine">
+    </form>
+  </div>
+</body>
+</html>

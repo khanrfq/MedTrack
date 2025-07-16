@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MedTrack Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 text-gray-800 min-h-screen">
+    <!-- Header -->
+    <div class="flex justify-between items-center px-6 py-4 bg-white shadow-md border border-black">
+      <div class="text-xl font-semibold text-blue-600">
+        🧑‍⚕️ MedTrack | Welcome, <span class="font-bold">{{ username }}</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <a href="/add-medicine" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          + Add Medicine
+        </a>
+        <a href="/user" title="User Info" class="bg-blue-100 text-blue-600 p-2 rounded-full shadow hover:bg-blue-200 transition duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5.121 17.804A3 3 0 016 16h12a3 3 0 01.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Overview Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-6">
+      <!-- Daily Doses -->
+      <div class="bg-white p-6 rounded-xl border border-black shadow text-center">
+        <p class="text-lg font-medium mb-2">Today Doses📆</p>
+        <p class="text-4xl font-bold text-blue-600">{{ reminders|length }}</p>
+      </div>
+
+      <!-- Streak Tracker -->
+      <div class="bg-white p-6 rounded-xl border border-black shadow">
+        <p class="text-lg font-medium mb-4 text-center">Streak Tracker🔥</p>
+        <ul class="space-y-2">
+          {% for med in reminders %}
+            <li class="flex justify-between items-center">
+              <span>💊 {{ med.medicine_name }} at {{ med.dose_time }}</span>
+              <input type="checkbox" />
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Doctor Info -->
+      <div class="bg-white p-6 rounded-xl border border-black shadow text-center">
+        <p class="text-lg font-medium mb-4">Doctor Info🧑‍⚕️</p>
+        {% if doctor %}
+          <button onclick="showDoctorModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">View Details</button>
+        {% else %}
+          <a href="/doctor-info" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Details</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Doctor Modal -->
+<div id="doctorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <h2 class="text-xl font-semibold mb-4">Doctor Details</h2>
+    {% if doctor %}
+      <p><strong>Name:</strong> {{ doctor.name }}</p>
+      <p><strong>Email:</strong> {{ doctor.email }}</p>
+      <p><strong>Phone:</strong> {{ doctor.phone }}</p>
+      <p><strong>Specialty:</strong> {{ doctor.specialization }}</p>
+      <p><strong>Next Checkup:</strong> {{ doctor.next_checkup_date }}</p>
+
+      <!-- 👇 Edit Button -->
+      <div class="mt-4 text-right">
+        <a href="/doctor-info" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Edit</a>
+        <button onclick="closeDoctorModal()" class="ml-2 text-blue-600 hover:underline">Close</button>
+      </div>
+    {% else %}
+      <p class="text-gray-500">No doctor information available.</p>
+      <div class="text-right mt-4">
+        <a href="/doctor-info" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Doctor</a>
+        <button onclick="closeDoctorModal()" class="ml-2 text-blue-600 hover:underline">Close</button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+
+    <!-- Medications List -->
+    <div class="px-6 mt-4">
+      <div class="bg-white p-6 rounded-xl border border-black shadow">
+        <h2 class="text-xl font-semibold">Your Medications</h2>
+        <p class="text-sm text-gray-500 mb-4">Manage your current prescription</p>
+        {% if medications %}
+          <ul class="space-y-4">
+            {% for med in medications %}
+              <li class="p-4 bg-gray-100 rounded flex justify-between items-center">
+                <div>
+                  <strong>{{ med.medicine_name }}</strong> — {{ med.dose_count }} doses<br/>
+                  <span class="text-sm text-gray-600">{{ med.start_date }} to {{ med.end_date }} at {{ med.dose_time }}</span>
+                </div>
+                <div class="flex space-x-2">
+                  <a href="/edit-medicine/{{ med.id }}" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</a>
+                  <form action="/delete-medicine/{{ med.id }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-center text-gray-400">
+            <p>No medications added yet.</p>
+            <a href="/add-medicine" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Add Medicine</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Upcoming Reminders -->
+    <div class="px-6 mt-6 mb-20">
+      <div class="bg-white p-6 rounded-xl border border-black shadow pb-10">
+        <h2 class="text-xl font-semibold">Upcoming Reminders</h2>
+        <p class="text-sm text-gray-500 mb-4">Reminders scheduled for today</p>
+        {% if reminders %}
+          <ul class="space-y-4">
+            {% for med in reminders %}
+              <li class="p-4 bg-yellow-100 rounded">
+                <strong>{{ med.medicine_name }}</strong> — Take at {{ med.dose_time }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-center text-gray-400">
+            <p>No upcoming reminders today.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t py-6 text-center text-sm text-gray-500">
+      © 2025 MedTrack. All rights reserved.
+    </footer>
+
+    <!-- Modal Script -->
+    <script>
+      function showDoctorModal() {
+        const modal = document.getElementById('doctorModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      function closeDoctorModal() {
+        const modal = document.getElementById('doctorModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    </script>
+  </body>
+</html>
