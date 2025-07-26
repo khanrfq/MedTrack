@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
 # Initialize DynamoDB and SNS clients
-dynamodb = boto3.resource('dynamodb', region_name='us-east-')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 sns = boto3.client('sns', region_name='us-east-1')
 
 # Table references
