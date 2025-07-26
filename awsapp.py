@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import boto3
 from datetime import date
 import uuid
+import traceback
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -10,7 +11,10 @@ app.secret_key = 'your_secret_key_here'
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 sns = boto3.client('sns', region_name='us-east-1')
 
-# Table references
+# SNS Topic ARN (Make sure email subscription is confirmed)
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:221082197973:medtrack-alerts'
+
+# DynamoDB Table references
 users_table = dynamodb.Table('users')
 med_table = dynamodb.Table('medications')
 dose_table = dynamodb.Table('dose_log')
@@ -44,7 +48,7 @@ def register():
     })
     return f"User {name} registered successfully. <a href='/login'>Login now</a>"
 
-# ✅ Handle Existing User Login
+# ✅ Handle Login
 @app.route('/login-existing', methods=['POST'])
 def login_existing():
     email = request.form['email']
@@ -109,7 +113,7 @@ def add_medicine():
 
     return render_template('add_medicine.html')
 
-# ✅ Edit Existing Medicine
+# ✅ Edit Medicine
 @app.route('/edit-medicine/<string:medicine_id>', methods=['GET', 'POST'])
 def edit_medicine(medicine_id):
     if 'email' not in session:
@@ -146,11 +150,12 @@ def delete_medicine(medicine_id):
     med_table.delete_item(Key={'id': medicine_id, 'user_email': session['email']})
     return redirect(url_for('dashboard'))
 
-# ✅ Mark Dose as Completed
+# ✅ Mark Dose as Completed & Send SNS Notification
 @app.route('/complete-dose/<string:med_id>', methods=['POST'])
 def complete_dose(med_id):
     if 'email' not in session:
         return redirect(url_for('login'))
+
     dose_table.put_item(Item={
         'id': str(uuid.uuid4()),
         'user_email': session['email'],
@@ -158,16 +163,16 @@ def complete_dose(med_id):
         'date': date.today().isoformat()
     })
 
-    # Optional: send email notification using SNS
-    user_email = session['email']
     try:
         sns.publish(
-            TopicArn='arn:aws:sns:us-east-1:221082197973:medtrack-alerts',
+            TopicArn=SNS_TOPIC_ARN,
             Subject="Dose Completed",
-            Message=f"You completed your dose for medicine ID: {med_id}",
+            Message=f"✅ You completed your dose for medicine ID: {med_id}"
         )
+        print("📨 SNS notification sent successfully.")
     except Exception as e:
-        print("SNS Error:", e)
+        print("❌ SNS Error:")
+        traceback.print_exc()
 
     return redirect(url_for('dashboard'))
 
@@ -178,7 +183,7 @@ def user_profile():
         return redirect(url_for('login'))
     return render_template('user_profile.html', username=session['username'], email=session['email'])
 
-# ✅ Add or Update Doctor Info
+# ✅ Doctor Info
 @app.route('/doctor-info', methods=['GET', 'POST'])
 def doctor_info():
     if 'email' not in session:
@@ -207,4 +212,4 @@ def logout():
 
 # ✅ Run
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0',port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
