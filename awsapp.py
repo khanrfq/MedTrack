@@ -162,7 +162,7 @@ def complete_dose(med_id):
     user_email = session['email']
     try:
         sns.publish(
-            TopicArn='arn:aws:sns:ap-south-1:YOUR_ACCOUNT_ID:YourTopic',
+            TopicArn='arn:aws:sns:us-east-1:221082197973:medtrack-alerts',
             Subject="Dose Completed",
             Message=f"You completed your dose for medicine ID: {med_id}",
         )
